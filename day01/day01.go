@@ -9,34 +9,47 @@ func main() {
 	entries := utils.ReadLinesOfNumbers("./day01/input.txt")
 
 	fmt.Println("----- Part 1 -----")
-	fmt.Printf("The two entries multiply out to: %d\n", findAndMultiplyTwoMatchingEntries(entries))
+	fmt.Printf("The two entries multiply out to: %d\n", findMatchingEntryProduct(entries, 2, 2020))
 
 	fmt.Println("----- Part 2 -----")
-	fmt.Printf("The three entries multiply out to: %d\n", findAndMultiplyThreeMatchingEntries(entries))
+	fmt.Printf("The three entries multiply out to: %d\n", findMatchingEntryProduct(entries, 3, 2020))
 }
 
-func findAndMultiplyTwoMatchingEntries(entries []int) int {
-	for _, i := range entries {
-		for _, j := range entries {
-			if i+j == 2020 {
-				return i * j
-			}
+func findMatchingEntryProduct(numbers []int, count int, target int) int {
+	if count == 0 {
+		// We've reached the desired count; return 1 to bubble the solution back up
+		return 1
+	}
+
+	if count == 1 {
+		if contains(numbers, target) {
+			// A matching number was found!
+			return target
+		} else {
+			// We needed to find a specific number but did not
+			// Return 0 so the product becomes 0 and we can check the next potential solution
+			return 0
 		}
 	}
 
-	return -1
-}
-
-func findAndMultiplyThreeMatchingEntries(entries []int) int {
-	for _, i := range entries {
-		for _, j := range entries {
-			for _, k := range entries {
-				if i+j+k == 2020 {
-					return i * j * k
-				}
-			}
+	for _, i := range numbers {
+		// Try to find (count-1) numbers that add up to (target-i)
+		product := findMatchingEntryProduct(numbers, count - 1, target - i)
+		if product > 0 {
+			// Such a number was found - bubble the product back up
+			return i * product
 		}
 	}
 
-	return -1
+	return 0
+}
+
+func contains(numbers []int, target int) bool {
+	for _, i := range numbers {
+		if i == target {
+			return true
+		}
+	}
+
+	return false
 }
