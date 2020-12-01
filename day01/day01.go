@@ -22,7 +22,7 @@ func findMatchingEntryProduct(numbers []int, count int, target int) int {
 	}
 
 	if count == 1 {
-		if contains(numbers, target) {
+		if utils.SliceContains(numbers, target) {
 			// A matching number was found!
 			return target
 		} else {
@@ -44,12 +44,3 @@ func findMatchingEntryProduct(numbers []int, count int, target int) int {
 	return 0
 }
 
-func contains(numbers []int, target int) bool {
-	for _, i := range numbers {
-		if i == target {
-			return true
-		}
-	}
-
-	return false
-}
