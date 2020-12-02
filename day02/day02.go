@@ -36,9 +36,9 @@ func parseEntries(lines []string) []Entry {
 	for _, line := range lines {
 		matches := re.FindStringSubmatch(line)
 		entries = append(entries, Entry{
-			a:        utils.MustParseInt(matches[1]),
-			b:        utils.MustParseInt(matches[2]),
-			letter:   int32(matches[3][0]),
+			low:      utils.MustParseInt(matches[1]),
+			high:     utils.MustParseInt(matches[2]),
+			letter:   rune(matches[3][0]),
 			password: matches[4],
 		})
 	}
@@ -47,9 +47,9 @@ func parseEntries(lines []string) []Entry {
 }
 
 type Entry struct {
-	a        int
-	b        int
-	letter   int32
+	low      int
+	high     int
+	letter   rune
 	password string
 }
 
@@ -61,17 +61,13 @@ func (e Entry) IsValidForOldPolicy() bool {
 		}
 	}
 
-	return matches >= e.a && matches <= e.b
+	return matches >= e.low && matches <= e.high
 }
 
-func (e Entry) CharMatches(pos int, char int32) bool {
-	if pos > len(e.password) {
-		return false
-	}
-
-	return int32(e.password[pos - 1]) == char
+func (e Entry) CharMatches(pos int, char rune) bool {
+	return rune(e.password[pos - 1]) == char
 }
 
 func (e Entry) IsValidForNewPolicy() bool {
-	return e.CharMatches(e.a, e.letter) != e.CharMatches(e.b, e.letter)
+	return e.CharMatches(e.low, e.letter) != e.CharMatches(e.high, e.letter)
 }
