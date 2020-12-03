@@ -18,6 +18,7 @@ func TestDay03(t *testing.T) {
 		{X: 7, Y: 1},
 		{X: 1, Y: 2},
 	}))
+	assert.Equal(t, utils.Vector2{X: 1, Y: 5}, findBestSlope(sampleInput))
 
 	realInput := utils.ReadLines("../day03/input.txt")
 	assert.Equal(t, 274, countTrees(realInput, utils.Vector2{X: 3, Y: 1}))
@@ -28,4 +29,5 @@ func TestDay03(t *testing.T) {
 		{X: 7, Y: 1},
 		{X: 1, Y: 2},
 	}))
+	assert.Equal(t, utils.Vector2{X: 1, Y: 322}, findBestSlope(realInput))
 }

@@ -19,6 +19,9 @@ func main() {
 		{X: 7, Y: 1},
 		{X: 1, Y: 2},
 	}))
+
+	fmt.Println("----- BONUS -----")
+	fmt.Printf("The shortest path without hitting any trees was found via slope %v\n", findBestSlope(grid))
 }
 
 func countTrees (grid []string, slope utils.Vector2) int {
@@ -49,4 +52,13 @@ func productTrees(grid []string, slopes []utils.Vector2) int {
 	}
 
 	return product
+}
+
+func findBestSlope(grid []string) utils.Vector2 {
+	for i := 0; ; i++ {
+		slope := (utils.Vector2{X: i, Y: len(grid) - 1}).Reduce()
+		if countTrees(grid, slope) == 0 {
+			return slope
+		}
+	}
 }
