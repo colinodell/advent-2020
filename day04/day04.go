@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -19,9 +18,7 @@ func main() {
 	fmt.Printf("Number of valid passports (validating field values too): %d\n", countValid(batchFile, true))
 }
 
-func countValid(input string, checkValues bool) int {
-	count := 0
-
+func countValid(input string, checkValues bool) (count int) {
 	// Normalize the data so each key:value pair is on a single line, then split the batch up into single passports
 	passports := strings.Split(strings.Replace(input, " ", "\n", -1), "\n\n")
 
@@ -32,56 +29,28 @@ func countValid(input string, checkValues bool) int {
 		}
 	}
 
-	return count
+	return
 }
 
-var fields = map[string]func(string) bool {
-	"byr": func(input string) bool {
-		year, err := strconv.Atoi(input)
-		return err == nil && year >= 1920 && year <= 2002
-	},
-	"iyr": func(input string) bool {
-		year, err := strconv.Atoi(input)
-		return err == nil && year >= 2010 && year <= 2020
-	},
-	"eyr": func(input string) bool {
-		year, err := strconv.Atoi(input)
-		return err == nil && year >= 2020 && year <= 2030
-	},
-	"hgt": func(input string) bool {
-		value, units := input[:len(input)-2], input[len(input)-2:]
-		height, err := strconv.Atoi(value)
-		if err != nil {
-			return false
-		} else if units == "cm" {
-			return height >= 150 && height <= 193
-		} else if units == "in" {
-			return height >= 59 && height <= 76
-		} else {
-			return false
-		}
-	},
-	"hcl": func(input string) bool {
-		re := regexp.MustCompile("^#[0-9a-f]{6}$")
-		return re.MatchString(input)
-	},
-	"ecl": func(input string) bool {
-		return input == "amb" || input == "blu" || input == "brn" || input == "gry" || input == "grn" || input == "hzl"|| input == "oth"
-	},
-	"pid": func(input string) bool {
-		number, err := strconv.Atoi(input)
-		return err == nil && len(input) == 9 && number > 0 && number <= 999999999
-	},
+var fields = map[string]*regexp.Regexp {
+	"byr": regexp.MustCompile("^19[2-9][0-9]|200[0-2]$"),
+	"iyr": regexp.MustCompile("^20(?:1[0-9]|20)$"),
+	"eyr": regexp.MustCompile("^20(?:2[0-9]|30)$"),
+	"hgt": regexp.MustCompile("^(?:(?:59|6[0-9]|7[0-6])in)|(?:(?:1[5-8][0-9]|19[0-3])cm)$"),
+	"hcl": regexp.MustCompile("^#[0-9a-f]{6}$"),
+	"ecl": regexp.MustCompile("^amb|blu|brn|gry|grn|hzl|oth$"),
+	"pid": regexp.MustCompile("^\\d{9}$"),
 }
 
 var lineRegex = regexp.MustCompile("(\\w+):(.+)")
 
 func validatePassport(input string, checkValues bool) bool {
-	matches := lineRegex.FindAllStringSubmatch(input, -1)
+	passportData := lineRegex.FindAllStringSubmatch(input, -1)
 
+	// Verify each required field exists and optionally validate the values
 	for fieldName, validator := range fields {
-		value, err := getFieldValue(fieldName, matches)
-		if err != nil || (checkValues && !validator(value)) {
+		value, err := getFieldValue(fieldName, passportData)
+		if err != nil || (checkValues && !validator.MatchString(value)) {
 			return false
 		}
 	}
