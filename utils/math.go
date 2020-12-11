@@ -66,3 +66,20 @@ func GCD(a, b int) int {
 	}
 	return a
 }
+
+func Tribonacci(n int) int {
+	if n < 0 {
+		panic("n must be positive")
+	}
+
+	trib := make([]int, Max(n+1, 3))
+	trib[0] = 0
+	trib[1] = 0
+	trib[2] = 1
+
+	for i := 3; i <= n; i++ {
+		trib[i] = trib[i-3] + trib[i-2] + trib[i-1]
+	}
+
+	return trib[n]
+}
