@@ -57,6 +57,14 @@ func SumSlice(seq []int) int {
 	return sum
 }
 
+func Abs(i int) int {
+	if i < 0 {
+		return -i
+	}
+
+	return i
+}
+
 // https://siongui.github.io/2017/06/03/go-find-lcm-by-gcd/
 func GCD(a, b int) int {
 	for b != 0 {

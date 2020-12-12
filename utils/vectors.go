@@ -26,3 +26,27 @@ func (v Vector2) Reduce() Vector2 {
 		Y: v.Y / gcd,
 	}
 }
+
+func (v Vector2) ManhattanDistance() int {
+	return Abs(v.X) + Abs(v.Y)
+}
+
+func (v Vector2) RotateClockwise(quarterTurns int) Vector2 {
+	for quarterTurns > 0 {
+		v.X, v.Y = v.Y, v.X
+		v.Y = -v.Y
+		quarterTurns--
+	}
+
+	return v
+}
+
+func (v Vector2) RotateCounterClockwise(quarterTurns int) Vector2 {
+	for quarterTurns > 0 {
+		v.X, v.Y = v.Y, v.X
+		v.X = -v.X
+		quarterTurns--
+	}
+
+	return v
+}
