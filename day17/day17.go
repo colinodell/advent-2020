@@ -28,16 +28,17 @@ func NewPocketDimension(input []string, dimensions int) PocketDimension {
 
 	for y, line := range input {
 		for x, char := range line {
-			var v utils.Vector
+			if char != '#' {
+				continue
+			}
+
 			if dimensions == 3 {
-				v = utils.Vector3{X: x, Y: y, Z: 0}
+				pd.grid[utils.Vector3{X: x, Y: y, Z: 0}] = true
 			} else if dimensions == 4 {
-				v = utils.Vector4{X: x, Y: y, Z: 0, W: 0}
+				pd.grid[utils.Vector4{X: x, Y: y, Z: 0, W: 0}] = true
 			} else {
 				panic("invalid number of dimensions")
 			}
-
-			pd.grid[v] = char == '#'
 		}
 	}
 
@@ -57,6 +58,8 @@ func (pd *PocketDimension) RunCycle() {
 		}
 	}
 
+	newGrid := make(map[utils.Vector]bool)
+
 	for vector, active := range searchGrid {
 		activeNeighbors := 0
 		for _, neighbor := range vector.Nearby() {
@@ -65,12 +68,14 @@ func (pd *PocketDimension) RunCycle() {
 			}
 		}
 
-		if active {
-			pd.grid[vector] = activeNeighbors == 2 || activeNeighbors == 3
-		} else {
-			pd.grid[vector] = activeNeighbors == 3
+		if active && (activeNeighbors == 2 || activeNeighbors == 3) {
+			newGrid[vector] = true
+		} else if !active && activeNeighbors == 3 {
+			newGrid[vector] = true
 		}
 	}
+
+	pd.grid = newGrid
 }
 
 func (pd *PocketDimension) countActive() int {
