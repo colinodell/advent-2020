@@ -2,6 +2,7 @@ package main
 
 import (
 	"advent-2020/utils"
+	"fmt"
 )
 
 func main() {
@@ -10,20 +11,32 @@ func main() {
 	fmt.Println("----- Part 1 -----")
 	pd3 := NewPocketDimension(input, 3)
 	fmt.Printf("3D dimension, after 6 cycles: %d\n", pd3.Run(6))
+
+	fmt.Println("----- Part 2 -----")
+	pd4 := NewPocketDimension(input, 4)
+	fmt.Printf("4D dimension, after 6 cycles: %d\n", pd4.Run(6))
 }
 
 type PocketDimension struct {
-	grid map[utils.Vector3]bool
+	grid map[utils.Vector]bool
 }
 
-func NewPocketDimension(input []string) PocketDimension {
+func NewPocketDimension(input []string, dimensions int) PocketDimension {
 	pd := PocketDimension{
-		grid: make(map[utils.Vector3]bool),
+		grid: make(map[utils.Vector]bool),
 	}
 
 	for y, line := range input {
 		for x, char := range line {
-			v := utils.Vector3{X: x, Y: y, Z: 0}
+			var v utils.Vector
+			if dimensions == 3 {
+				v = utils.Vector3{X: x, Y: y, Z: 0}
+			} else if dimensions == 4 {
+				v = utils.Vector4{X: x, Y: y, Z: 0, W: 0}
+			} else {
+				panic("invalid number of dimensions")
+			}
+
 			pd.grid[v] = char == '#'
 		}
 	}
@@ -32,7 +45,7 @@ func NewPocketDimension(input []string) PocketDimension {
 }
 
 func (pd *PocketDimension) RunCycle() {
-	searchGrid := make(map[utils.Vector3]bool)
+	searchGrid := make(map[utils.Vector]bool)
 	for k, v := range pd.grid {
 		searchGrid[k] = v
 
