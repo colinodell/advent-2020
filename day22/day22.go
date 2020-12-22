@@ -14,6 +14,7 @@ type Game struct {
 type Player struct {
 	topCard    *Card
 	bottomCard *Card
+	count int
 }
 
 // Card deck is implemented as a doubly-linked list
@@ -41,11 +42,13 @@ func (p *Player) AddCards(values ...int) {
 		if p.topCard == nil {
 			p.topCard = card
 		}
+
+		p.count++
 	}
 }
 
 func (p *Player) HasCards() bool {
-	return p.topCard != nil
+	return p.count > 0
 }
 
 func (p *Player) PlayTopCard() int {
@@ -59,7 +62,24 @@ func (p *Player) PlayTopCard() int {
 		p.topCard.prev = nil
 	}
 
+	p.count--
+
 	return top.value
+}
+
+// Returns a representation of the deck as a string
+func (p *Player) String() string {
+	var sb strings.Builder
+	node := p.topCard
+	for node != nil {
+		sb.WriteString(strconv.Itoa(node.value))
+		if node.next != nil {
+			sb.WriteString(",")
+		}
+		node = node.next
+	}
+
+	return sb.String()
 }
 
 func (p *Player) CalculateScore() int {
@@ -73,6 +93,19 @@ func (p *Player) CalculateScore() int {
 	}
 
 	return score
+}
+
+func (p *Player) Copy(count int) *Player {
+	newPlayer := &Player{}
+
+	nextCard := p.topCard
+
+	for newPlayer.count < count {
+		newPlayer.AddCards(nextCard.value)
+		nextCard = nextCard.next
+	}
+
+	return newPlayer
 }
 
 func (g *Game) getWinner() (*Player, error) {
@@ -94,6 +127,48 @@ func (g *Game) getWinner() (*Player, error) {
 func (g *Game) Play() *Player {
 	for {
 		g.PlayRound()
+		if winner, _ := g.getWinner(); winner != nil {
+			return winner
+		}
+	}
+}
+
+// Plays a full game of recursive combat and returns the winner
+func (g *Game) PlayRecursive() *Player {
+	previousRounds := make(map[string]struct{}, len(g.players))
+
+	for {
+		// Check if we've played an identical round before
+		currentRoundString := g.players[0].String() + "|" + g.players[1].String()
+		if _, exists := previousRounds[currentRoundString]; exists {
+			return g.players[0]
+		}
+		// We have not; record the current round to check against in the future
+		previousRounds[currentRoundString] = struct{}{}
+
+		// Have each player draw a card
+		p1Card, p2Card := g.players[0].PlayTopCard(), g.players[1].PlayTopCard()
+		if p1Card <= g.players[0].count && p2Card <= g.players[1].count {
+			// The winner of the round is determined by recursing into a sub-game of Recursive Combat.
+			newP1, newP2 := g.players[0].Copy(p1Card), g.players[1].Copy(p2Card)
+			subGame := Game{players: []*Player{newP1, newP2}}
+			
+			winner := subGame.PlayRecursive()
+			if winner == newP1 {
+				g.players[0].AddCards(p1Card, p2Card)
+			} else {
+				g.players[1].AddCards(p2Card, p1Card)
+			}
+		} else {
+			// At least one player must not have enough cards left in their deck to recurse.
+			// The winner of the round is the player with the higher-value card.
+			if p1Card > p2Card {
+				g.players[0].AddCards(p1Card, p2Card)
+			} else {
+				g.players[1].AddCards(p2Card, p1Card)
+			}
+		}
+
 		if winner, _ := g.getWinner(); winner != nil {
 			return winner
 		}
