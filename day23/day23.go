@@ -15,6 +15,13 @@ func main() {
 		game.Play(10)
 		fmt.Printf("Labels on the cups after cup 1: %s\n", game.LabelsAfterCup1())
 	}
+
+	{
+		fmt.Println("----- Part 2 -----")
+		game := NewCupGame(input, 1000000)
+		game.Play(10000000)
+		fmt.Printf("Product of the labels containing stars: %d\n", game.GetProductOfStarLabels())
+	}
 }
 
 type CupGame struct {
@@ -23,10 +30,10 @@ type CupGame struct {
 	max int
 }
 
-func NewCupGame(input string) CupGame {
+func NewCupGame(input string, max int) CupGame {
 	inputDigits := utils.DigitsFromString(input)
 
-	cg := CupGame{cups: make(map[int]int, len(inputDigits)), current: 0, max: len(inputDigits)}
+	cg := CupGame{cups: make(map[int]int, len(inputDigits)), current: 0, max: max}
 	start := 0
 	last := 0
 
@@ -41,9 +48,15 @@ func NewCupGame(input string) CupGame {
 		} else {
 			// We're at the end
 			last = inputDigits[i]
+			cg.cups[last] = start
 		}
 	}
 
+	// Do we need extra digits?
+	for i := len(inputDigits) + 1; i <= max; i++ {
+		cg.cups[last] = i
+		last = i
+	}
 
 	cg.cups[last] = start
 
@@ -98,4 +111,11 @@ func (cg *CupGame) LabelsAfterCup1() string {
 		ret += strconv.Itoa(cg.current)
 	}
 	return ret
+}
+
+func (cg *CupGame) GetProductOfStarLabels() int {
+	c1 := cg.cups[1]
+	c2 := cg.cups[c1]
+
+	return c1 * c2
 }
