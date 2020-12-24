@@ -25,7 +25,7 @@ func main() {
 }
 
 type CupGame struct {
-	cups map[int]int
+	cups []int
 	current int
 	max int
 }
@@ -33,7 +33,7 @@ type CupGame struct {
 func NewCupGame(input string, max int) CupGame {
 	inputDigits := utils.DigitsFromString(input)
 
-	cg := CupGame{cups: make(map[int]int, len(inputDigits)), current: 0, max: max}
+	cg := CupGame{cups: make([]int, max+1), current: 0, max: max}
 	start := 0
 	last := 0
 
@@ -90,8 +90,6 @@ func (cg *CupGame) Play(rounds int) {
 		// Insert them after the destination
 		oldDestValue := cg.cups[destination]
 		cg.cups[destination] = cup1
-		cg.cups[cup1] = cg.cups[cup2]
-		cg.cups[cup2] = cg.cups[cup3]
 		cg.cups[cup3] = oldDestValue
 
 		cg.current = after
