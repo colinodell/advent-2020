@@ -8,8 +8,22 @@ import (
 var sampleInput = "389125467"
 var realInput = "739862541"
 
-func TestPlay(t *testing.T) {
-	assert.Equal(t, "92658374", Play(sampleInput, 10))
-	assert.Equal(t, "67384529", Play(sampleInput, 100))
-	assert.Equal(t, "94238657", Play(realInput, 100))
+func TestCupGame(t *testing.T) {
+	{
+		game := NewCupGame(sampleInput)
+		game.Play(10)
+		assert.Equal(t, "92658374", game.LabelsAfterCup1())
+	}
+
+	{
+		game := NewCupGame(sampleInput)
+		game.Play(100)
+		assert.Equal(t, "67384529", game.LabelsAfterCup1())
+	}
+
+	{
+		game := NewCupGame(realInput)
+		game.Play(100)
+		assert.Equal(t, "94238657", game.LabelsAfterCup1())
+	}
 }

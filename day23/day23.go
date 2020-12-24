@@ -2,114 +2,100 @@ package main
 
 import (
 	"advent-2020/utils"
+	"fmt"
 	"strconv"
 )
 
-type CircularList struct {
-	values []int
+func main() {
+	input := "739862541"
+
+	{
+		fmt.Println("----- Part 1 -----")
+		game := NewCupGame(input, 9)
+		game.Play(10)
+		fmt.Printf("Labels on the cups after cup 1: %s\n", game.LabelsAfterCup1())
+	}
 }
 
-func NewCircularList(values ...int) CircularList {
-	return CircularList{values: values}
+type CupGame struct {
+	cups map[int]int
+	current int
+	max int
 }
 
-func (c *CircularList) GetCurrent() int {
-	return c.values[0]
-}
+func NewCupGame(input string) CupGame {
+	inputDigits := utils.DigitsFromString(input)
 
-func (c *CircularList) Advance() {
-	c.values = append(c.values[1:], c.values[0])
-}
+	cg := CupGame{cups: make(map[int]int, len(inputDigits)), current: 0, max: len(inputDigits)}
+	start := 0
+	last := 0
 
+	for i := 0; i < len(inputDigits); i++ {
+		if start == 0 {
+			start = inputDigits[0]
+		}
 
-func (c *CircularList) SetCurrent(value int) {
-	for i, v := range c.values {
-		if v == value {
-			c.SetCurrentPosition(i)
-			return
+		if i < (len(inputDigits) - 1) {
+			// Point to the next cup
+			cg.cups[inputDigits[i]] = inputDigits[i+1]
+		} else {
+			// We're at the end
+			last = inputDigits[i]
 		}
 	}
 
-	panic("value does not exist")
+
+	cg.cups[last] = start
+
+	cg.current = start
+
+	return cg
 }
 
-func (c *CircularList) SetCurrentPosition(pos int) {
-	if pos == 0 {
-		return
-	}
-
-	var ret []int
-	for len(ret) < len(c.values) {
-		ret = append(ret, c.values[pos])
-		pos = (pos + 1) % len(c.values)
-	}
-
-	c.values = ret
-}
-
-func (c *CircularList) Take(count int, offset int) []int {
-	ret := make([]int, count)
-	copy(ret, c.values[offset:offset+count])
-
-	c.values = append(c.values[0:offset], c.values[count+offset:]...)
-
-	return ret
-}
-
-func (c *CircularList) InsertAfter(target int, values []int) {
-	for i, v := range c.values {
-		if v == target {
-			c.values = append(c.values[:i+1], append(values, c.values[i+1:]...)...)
-			return
-		}
-	}
-}
-
-func Play(input string, rounds int) string {
-	list := NewCircularList(utils.DigitsFromString(input)...)
-
-	round := 1
-
+func (cg *CupGame) Play(rounds int) {
 	for {
-		round++
+		// Take three cups
+		cup1 := cg.cups[cg.current]
+		cup2 := cg.cups[cup1]
+		cup3 := cg.cups[cup2]
+		after := cg.cups[cup3]
 
-
-		currentCup := list.GetCurrent()
-		pickedUp := list.Take(3, 1)
-
-		destinationCup := currentCup - 1
-		if destinationCup == 0 {
-			destinationCup = 9
+		destination := cg.current - 1
+		if destination == 0 {
+			destination = cg.max
 		}
-		for utils.SliceContains(pickedUp, destinationCup) {
-			destinationCup--
-			if destinationCup == 0 {
-				destinationCup = 9
+		for cup1 == destination || cup2 == destination || cup3 == destination {
+			destination--
+			if destination == 0 {
+				destination = cg.max
 			}
 		}
 
-		list.InsertAfter(destinationCup, pickedUp)
-		list.Advance()
+		// Remove the three cups
+		cg.cups[cg.current] = after
+
+		// Insert them after the destination
+		oldDestValue := cg.cups[destination]
+		cg.cups[destination] = cup1
+		cg.cups[cup1] = cg.cups[cup2]
+		cg.cups[cup2] = cg.cups[cup3]
+		cg.cups[cup3] = oldDestValue
+
+		cg.current = after
 
 		rounds--
 		if rounds == 0 {
 			break
 		}
 	}
+}
 
-	list.SetCurrent(1)
+func (cg *CupGame) LabelsAfterCup1() string {
+	cg.current = cg.cups[1]
 
 	ret := ""
-	oneFound := false
-	for _, v := range list.values {
-		if v == 1 {
-			oneFound = true
-			continue
-		} else if !oneFound {
-			continue
-		}
-
-		ret += strconv.Itoa(v)
+	for cg.current = cg.cups[1]; cg.current != 1; cg.current = cg.cups[cg.current] {
+		ret += strconv.Itoa(cg.current)
 	}
 	return ret
 }
