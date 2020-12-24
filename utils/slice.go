@@ -2,6 +2,15 @@ package utils
 
 import "reflect"
 
+func DigitsFromString(input string) []int {
+	ret := make([]int, len(input))
+	for i, v := range input {
+		ret[i] = MustParseInt(string(v))
+	}
+
+	return ret
+}
+
 func SliceContains(haystack interface{}, needle interface{}) bool {
 	h := reflect.ValueOf(haystack)
 
