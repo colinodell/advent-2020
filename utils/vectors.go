@@ -8,6 +8,11 @@ type Vector3 struct {
 	X, Y, Z int
 }
 
+// Axial coordinate system: https://www.redblobgames.com/grids/hexagons/#neighbors
+type VectorHexagonal struct {
+	Q, R int
+}
+
 type Vector4 struct {
 	X, Y, Z, W int
 }
@@ -86,6 +91,13 @@ func (v Vector3) Nearby() []Vector {
 	}
 
 	return ret
+}
+
+func (v VectorHexagonal) Add(v2 VectorHexagonal) VectorHexagonal {
+	return VectorHexagonal{
+		Q: v.Q + v2.Q,
+		R: v.R + v2.R,
+	}
 }
 
 func (v *Vector4) Add(v2 Vector4) Vector4 {
